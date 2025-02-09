@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Runner</title>
+    <style>
+        .success-message {
+            color: green;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Start New Task</h1>
+    <form onsubmit="startTask(event)">
+        <button type="submit">Start Long Task</button>
+    </form>
+    <p><a href="/tasks">View Tasks</a></p>
+
+    <div id="message-container"></div>
+
+    <script>
+        function startTask(e) {
+            e.preventDefault();
+            fetch('/start_task', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    // Create a new message div and set its content
+                    const messageDiv = document.createElement('div');
+                    messageDiv.classList.add('success-message');
+                    messageDiv.textContent = data.message;
+
+                    // Append the message div to the message container
+                    document.getElementById('message-container').appendChild(messageDiv);
+                });
+        }
+    </script>
+</body>
+</html>

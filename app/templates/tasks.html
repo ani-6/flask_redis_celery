@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Monitor</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        .progress-bar { width: 200px; height: 20px; background-color: #f1f1f1; }
+        .progress { height: 100%; background-color: #4CAF50; }
+        .pagination { list-style-type: none; padding: 0; display: flex; }
+        .pagination li { margin: 0 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Task Monitor</h1>
+    <p><a href="/">Home</a></p>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Progress</th>
+                <th>Result</th>
+                <th>Date Created</th>
+            </tr>
+        </thead>
+        <tbody id="tasks-body">
+            <!-- Tasks will be loaded here -->
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        <button id="prev-button">Prev</button>
+        <span id="page-info"></span>
+        <button id="next-button">Next</button>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+
+        function updateTasks() {
+            fetch(`/tasks/json?page=${currentPage}&per_page=10`)
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('tasks-body');
+                    tbody.innerHTML = data.tasks.map(task => `
+                        <tr>
+                            <td>${task.id}</td>
+                            <td>${task.description}</td>
+                            <td>${task.status}</td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: ${task.progress}%"></div>
+                                </div>
+                                ${task.progress}%
+                            </td>
+                            <td>${task.result || ''}</td>
+                            <td>${task.date_created}</td>
+                        </tr>
+                    `).join('');
+
+                    totalPages = data.total_pages;
+                    currentPage = data.current_page;
+
+                    // Update pagination info
+                    document.getElementById('page-info').innerText = `Page ${currentPage} of ${totalPages}`;
+                    
+                    // Enable/disable prev/next buttons
+                    document.getElementById('prev-button').disabled = currentPage === 1;
+                    document.getElementById('next-button').disabled = currentPage === totalPages;
+                });
+        }
+
+        function changePage(direction) {
+            if (direction === 'prev' && currentPage > 1) {
+                currentPage--;
+            } else if (direction === 'next' && currentPage < totalPages) {
+                currentPage++;
+            }
+            updateTasks();
+        }
+
+        // Add event listeners for pagination buttons
+        document.getElementById('prev-button').addEventListener('click', () => changePage('prev'));
+        document.getElementById('next-button').addEventListener('click', () => changePage('next'));
+
+        // Update every second
+        setInterval(updateTasks, 1000);
+        
+        // Initial fetch
+        updateTasks();
+    </script>
+</body>
+</html>

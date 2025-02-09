@@ -1,0 +1,6 @@
+flask
+flask-sqlalchemy
+celery
+redis
+gunicorn
+flask-migrate
